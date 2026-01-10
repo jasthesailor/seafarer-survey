@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — Seafarer Survey</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Firebase compat SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+</head>
+
+<body class="bg-gradient-to-br from-blue-50 to-teal-50 min-h-screen p-6 font-sans">
+
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+    <div>
+      <h1 class="text-4xl font-extrabold text-blue-900">Dashboard — Seafarer Survey</h1>
+      <p class="text-sm text-slate-600">Visual summaries from Firestore collection <code class="font-mono">seafarer-survey</code>. Each chart can be exported as PNG, and the currently filtered data can be exported as CSV.</p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <a href="admin.html" class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition">Admin</a>
+      <button id="exportCsvBtn" class="bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700 transition">Export filtered CSV</button>
+      <button id="logoutBtn" class="bg-slate-800 text-white px-4 py-2 rounded-lg shadow hover:bg-slate-900 transition">Logout</button>
+    </div>
+  </div>
+
+  <div id="status" class="p-3 rounded-lg bg-blue-50 border border-blue-200 text-blue-900 mb-6">Starting…</div>
+
+  <!-- Filters -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+    <div>
+      <label class="block text-sm text-gray-700 mb-1 font-medium">Filter by Rank</label>
+      <select id="filterRank" class="w-full p-2 rounded border border-gray-300 shadow"><option value="">All Ranks</option></select>
+    </div>
+    <div>
+      <label class="block text-sm text-gray-700 mb-1 font-medium">Filter by Ship Type</label>
+      <select id="filterShipType" class="w-full p-2 rounded border border-gray-300 shadow"><option value="">All Ship Types</option></select>
+    </div>
+    <div>
+      <label class="block text-sm text-gray-700 mb-1 font-medium">Filter by Nationality</label>
+      <select id="filterNationality" class="w-full p-2 rounded border border-gray-300 shadow"><option value="">All Nationalities</option></select>
+    </div>
+    <div>
+      <label class="block text-sm text-gray-700 mb-1 font-medium">Filter by Company</label>
+      <select id="filterCompany" class="w-full p-2 rounded border border-gray-300 shadow"><option value="">All Companies</option></select>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+    <div class="bg-white p-6 rounded-xl shadow-lg">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-xl font-bold text-blue-900">Age (5-year groups, starting at 18)</h2>
+        <button class="text-sm bg-blue-100 px-3 py-1 rounded hover:bg-blue-200" onclick="downloadChart('ageChart')">Download</button>
+      </div>
+      <canvas id="ageChart"></canvas>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl shadow-lg">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-xl font-bold text-blue-900">Experience (1–5, 6–10, 11–15, 16–20, 21–25, 25+)</h2>
+        <button class="text-sm bg-blue-100 px-3 py-1 rounded hover:bg-blue-200" onclick="downloadChart('experienceChart')">Download</button>
+      </div>
+      <canvas id="experienceChart"></canvas>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl shadow-lg">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-xl font-bold text-blue-900">Ship Type</h2>
+        <button class="text-sm bg-blue-100 px-3 py-1 rounded hover:bg-blue-200" onclick="downloadChart('shipTypeChart')">Download</button>
+      </div>
+      <canvas id="shipTypeChart"></canvas>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl shadow-lg">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-xl font-bold text-blue-900">Rank Distribution</h2>
+        <button class="text-sm bg-blue-100 px-3 py-1 rounded hover:bg-blue-200" onclick="downloadChart('rankChart')">Download</button>
+      </div>
+      <canvas id="rankChart"></canvas>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl shadow-lg">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-xl font-bold text-blue-900">Company</h2>
+        <button class="text-sm bg-blue-100 px-3 py-1 rounded hover:bg-blue-200" onclick="downloadChart('companyChart')">Download</button>
+      </div>
+      <canvas id="companyChart"></canvas>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl shadow-lg">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-xl font-bold text-blue-900">Nationality</h2>
+        <button class="text-sm bg-blue-100 px-3 py-1 rounded hover:bg-blue-200" onclick="downloadChart('nationalityChart')">Download</button>
+      </div>
+      <canvas id="nationalityChart"></canvas>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl shadow-lg">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-xl font-bold text-blue-900">OSI Total (Histogram)</h2>
+        <button class="text-sm bg-blue-100 px-3 py-1 rounded hover:bg-blue-200" onclick="downloadChart('osiTotalChart')">Download</button>
+      </div>
+      <canvas id="osiTotalChart"></canvas>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl shadow-lg">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-xl font-bold text-blue-900">Psychological Safety Level</h2>
+        <button class="text-sm bg-blue-100 px-3 py-1 rounded hover:bg-blue-200" onclick="downloadChart('psychLevelChart')">Download</button>
+      </div>
+      <canvas id="psychLevelChart"></canvas>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl shadow-lg lg:col-span-2">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-xl font-bold text-blue-900">OSI Subscales (Radar — Avg item score 1–5)</h2>
+        <button class="text-sm bg-blue-100 px-3 py-1 rounded hover:bg-blue-200" onclick="downloadChart('osiRadarChart')">Download</button>
+      </div>
+      <p class="text-xs text-slate-500 mb-3">OSI subscale mapping is taken from your OSI appendix table in the uploaded Word document (items are 1-based; false-keying is already handled in <code class="font-mono">osiResponsesScored</code>).</p>
+      <canvas id="osiRadarChart"></canvas>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl shadow-lg lg:col-span-2">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-xl font-bold text-blue-900">Psychological Safety Subscales (Radar — Avg item score 1–5)</h2>
+        <button class="text-sm bg-blue-100 px-3 py-1 rounded hover:bg-blue-200" onclick="downloadChart('psychRadarChart')">Download</button>
+      </div>
+      <canvas id="psychRadarChart"></canvas>
+    </div>
+
+  </div>
+
+  <script>
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyANzdsv-fvfeE_0JzLjt0friR8xbW0WxlE",
+      authDomain: "seafarer-survey-63734.firebaseapp.com",
+      projectId: "seafarer-survey-63734",
+      storageBucket: "seafarer-survey-63734.firebasestorage.app",
+      messagingSenderId: "332568709642",
+      appId: "1:332568709642:web:01a06b78a944bc7ace2df3"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    const statusEl = document.getElementById('status');
+
+    // Filters
+    const filterRank = document.getElementById('filterRank');
+    const filterShipType = document.getElementById('filterShipType');
+    const filterNationality = document.getElementById('filterNationality');
+    const filterCompany = document.getElementById('filterCompany');
+
+    const exportCsvBtn = document.getElementById('exportCsvBtn');
+
+    // Charts
+    let ageChart, experienceChart, shipTypeChart, rankChart, companyChart, nationalityChart;
+    let osiTotalChart, psychLevelChart, osiRadarChart, psychRadarChart;
+
+    // All docs loaded (unfiltered)
+    let allData = [];
+
+    // ---- OSI SUBSCALE MAPPING (from your Word doc) ----
+    const OSI_SUBSCALES = {"Role Overload": [1, 13, 25, 34, 44, 46], "Role Ambiguity": [2, 14, 26, 37], "Role Conflict": [3, 15, 27, 38, 45], "Unreasonable Group and Political Pressure": [4, 16, 28, 39], "Responsibility for Persons": [5, 17, 29], "Under participation": [6, 18, 30, 40], "Powerlessness": [7, 19, 31], "Peer Group Relations": [8, 20, 32, 41], "Intrinsic Impoverishment": [9, 21, 33, 42], "Low status": [10, 22, 34], "Strenuous Working Condition": [12, 24, 35, 43], "Unprofitability": [11, 23]};
+
+    // Utilities
+    function uniqSorted(arr) { return [...new Set(arr.filter(Boolean))].sort((a,b)=>a.localeCompare(b)); }
+
+    function normalizeDoc(d) {
+      const out = { ...d };
+      out.rank = out.rank || '';
+      out.shipType = out.shipType || '';
+      out.nationality = out.nationality || '';
+      out.company = out.company || '';
+      return out;
+    }
+
+    function countBy(data, keyFn) {
+      const map = {};
+      data.forEach(d => {
+        const k = keyFn(d) || 'Unknown';
+        map[k] = (map[k] || 0) + 1;
+      });
+      return map;
+    }
+
+    // Age groups: 5-year brackets starting at 18.
+    function groupAge5(age) {
+      const a = Number(age);
+      if (!a || isNaN(a)) return 'Unknown';
+      if (a < 18) return '<18';
+      const start = 18 + Math.floor((a - 18) / 5) * 5;
+      const end = start + 4;
+      return start + '-' + end;
+    }
+
+    // Experience groups: 1-5, 6-10, 11-15, 16-20, 21-25, 25+
+    function groupExperienceCustom(exp) {
+      const e = Number(exp);
+      if (!e || isNaN(e)) return 'Unknown';
+      if (e <= 5) return '1-5';
+      if (e <= 10) return '6-10';
+      if (e <= 15) return '11-15';
+      if (e <= 20) return '16-20';
+      if (e <= 25) return '21-25';
+      return '25+';
+    }
+
+    // Chart helpers
+    const palette = [
+      '#2563eb','#0ea5e9','#14b8a6','#22c55e','#a855f7','#f97316','#ef4444','#64748b','#eab308','#06b6d4',
+      '#334155','#16a34a','#fb7185','#7c3aed'
+    ];
+
+    function makeBar(id, labels, values, title, existing, horizontal=false) {
+      const el = document.getElementById(id);
+      if (!el) return existing;
+      if (existing) existing.destroy();
+      return new Chart(el, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: title,
+            data: values,
+            backgroundColor: labels.map((_,i)=>palette[i%palette.length])
+          }]
+        },
+        options: {
+          responsive: true,
+          indexAxis: horizontal ? 'y' : 'x',
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    }
+
+    function makePie(id, labels, values, title, existing) {
+      const el = document.getElementById(id);
+      if (!el) return existing;
+      if (existing) existing.destroy();
+      return new Chart(el, {
+        type: 'pie',
+        data: {
+          labels,
+          datasets: [{
+            label: title,
+            data: values,
+            backgroundColor: labels.map((_,i)=>palette[i%palette.length])
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { position: 'bottom' } }
+        }
+      });
+    }
+
+    function makeRadar(id, labels, values, title, existing, suggestedMax=5) {
+      const el = document.getElementById(id);
+      if (!el) return existing;
+      if (existing) existing.destroy();
+      return new Chart(el, {
+        type: 'radar',
+        data: {
+          labels,
+          datasets: [{
+            label: title,
+            data: values,
+            fill: true,
+            backgroundColor: 'rgba(20,184,166,0.20)',
+            borderColor: 'rgba(20,184,166,1)',
+            pointBackgroundColor: 'rgba(37,99,235,1)'
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { position: 'bottom' } },
+          scales: { r: { beginAtZero: true, suggestedMax } }
+        }
+      });
+    }
+
+    // Export chart as PNG
+    window.downloadChart = function(canvasId) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+      const a = document.createElement('a');
+      a.download = canvasId + '.png';
+      a.href = canvas.toDataURL('image/png', 1.0);
+      a.click();
+    };
+
+    function exportFilteredCsv(filtered) {
+      const headers = [
+        'createdAt','rank','shipType','nationality','age','experience','company',
+        'osiTotal','osiResponsesRaw','osiResponsesScored',
+        'fatigueTotal','fatigueLevel','fatigueResponses',
+        'psychSafetyScaleTotal','psychSafetyLevel','psychSafetyScaleResponses',
+        'psychSafetyIndividual','psychSafetyIndividualLevel',
+        'psychSafetyTeamRespect','psychSafetyTeamRespectLevel',
+        'psychSafetyTeamLearning','psychSafetyTeamLearningLevel',
+        'supportAnswer','supportReason','communicationAnswer','communicationReason',
+        'psychologicalSafetyAnswer','psychologicalSafetyReason'
+      ];
+
+      function csvCell(v) {
+        const s = (v === undefined || v === null) ? '' : String(v);
+        return '"' + s.replace(/"/g, '""') + '"';
+      }
+
+      const lines = [headers.join(',')];
+      filtered.forEach(d => {
+        const createdAt = d.createdAt && typeof d.createdAt.toDate === 'function' ? d.createdAt.toDate().toISOString() : '';
+        const row = [
+          createdAt, d.rank, d.shipType, d.nationality, d.age, d.experience, d.company,
+          d.osiTotal, JSON.stringify(d.osiResponsesRaw||[]), JSON.stringify(d.osiResponsesScored||[]),
+          d.fatigueTotal, d.fatigueLevel, JSON.stringify(d.fatigueResponses||[]),
+          d.psychSafetyScaleTotal, d.psychSafetyLevel, JSON.stringify(d.psychSafetyScaleResponses||[]),
+          d.psychSafetyIndividual, d.psychSafetyIndividualLevel,
+          d.psychSafetyTeamRespect, d.psychSafetyTeamRespectLevel,
+          d.psychSafetyTeamLearning, d.psychSafetyTeamLearningLevel,
+          d.supportAnswer, d.supportReason,
+          d.communicationAnswer, d.communicationReason,
+          d.psychologicalSafetyAnswer, d.psychologicalSafetyReason
+        ].map(csvCell).join(',');
+        lines.push(row);
+      });
+
+      const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'dashboard_filtered_export.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // Histogram for OSI Total
+    function osiTotalHistogram(data) {
+      const totals = data.map(d => Number(d.osiTotal)).filter(x => !isNaN(x));
+      if (!totals.length) return { labels: [], values: [] };
+      const min = Math.min.apply(null, totals);
+      const max = Math.max.apply(null, totals);
+      const bins = 8;
+      const step = (max - min) / bins || 1;
+      const counts = Array(bins).fill(0);
+      totals.forEach(x => {
+        const idx = Math.max(0, Math.min(bins-1, Math.floor((x - min) / step)));
+        counts[idx] += 1;
+      });
+      const labels = counts.map((_,i) => {
+        const a = Math.round(min + i*step);
+        const b = Math.round(min + (i+1)*step);
+        return a + '-' + b;
+      });
+      return { labels, values: counts };
+    }
+
+    // OSI subscale radar (mean per subscale across respondents)
+    function osiSubscaleAverages(data) {
+      const labels = Object.keys(OSI_SUBSCALES);
+      const sums = {}; const counts = {};
+      labels.forEach(l => { sums[l] = 0; counts[l] = 0; });
+
+      data.forEach(d => {
+        const scored = Array.isArray(d.osiResponsesScored) ? d.osiResponsesScored.map(Number) : null;
+        if (!scored || scored.length < 46) return;
+
+        labels.forEach(name => {
+          const items = OSI_SUBSCALES[name];
+          const vals = items.map(no => scored[no-1]).filter(v => typeof v === 'number' && !isNaN(v));
+          if (!vals.length) return;
+          const mean = vals.reduce((a,b)=>a+b,0) / vals.length;
+          sums[name] += mean;
+          counts[name] += 1;
+        });
+      });
+
+      const avgs = labels.map(l => counts[l] ? (sums[l]/counts[l]) : 0);
+      return { labels, avgs };
+    }
+
+    // Psych safety subscale radar: use mean-per-item (1–5) so axes match.
+    function psychSubscaleAverages(data) {
+      let sumInd=0, sumTR=0, sumTL=0, n=0;
+      data.forEach(d => {
+        const indTot = Number(d.psychSafetyIndividual);
+        const trTot  = Number(d.psychSafetyTeamRespect);
+        const tlTot  = Number(d.psychSafetyTeamLearning);
+        if ([indTot,trTot,tlTot].some(v => !isNaN(v) && v>0)) {
+          sumInd += isNaN(indTot) ? 0 : (indTot/4); // 4 items
+          sumTR  += isNaN(trTot)  ? 0 : (trTot/3);  // 3 items
+          sumTL  += isNaN(tlTot)  ? 0 : (tlTot/4);  // 4 items
+          n += 1;
+        }
+      });
+      if (!n) return { labels: ['Individual Safety','Team Respect','Team Learning'], avgs: [0,0,0] };
+      return { labels: ['Individual Safety','Team Respect','Team Learning'], avgs: [sumInd/n, sumTR/n, sumTL/n] };
+    }
+
+    function populateFilters(dataRaw) {
+      const data = dataRaw.map(normalizeDoc);
+      filterRank.innerHTML = '<option value="">All Ranks</option>' + uniqSorted(data.map(d=>d.rank)).map(x=>'<option value="'+x+'">'+x+'</option>').join('');
+      filterShipType.innerHTML = '<option value="">All Ship Types</option>' + uniqSorted(data.map(d=>d.shipType)).map(x=>'<option value="'+x+'">'+x+'</option>').join('');
+      filterNationality.innerHTML = '<option value="">All Nationalities</option>' + uniqSorted(data.map(d=>d.nationality)).map(x=>'<option value="'+x+'">'+x+'</option>').join('');
+      filterCompany.innerHTML = '<option value="">All Companies</option>' + uniqSorted(data.map(d=>d.company)).map(x=>'<option value="'+x+'">'+x+'</option>').join('');
+    }
+
+    function applyFilters() {
+      const r = filterRank.value;
+      const s = filterShipType.value;
+      const n = filterNationality.value;
+      const c = filterCompany.value;
+
+      const filtered = allData.filter(d => (!r || d.rank === r) && (!s || d.shipType === s) && (!n || d.nationality === n) && (!c || d.company === c));
+      renderAllCharts(filtered);
+      return filtered;
+    }
+
+    function renderAllCharts(dataRaw) {
+      const data = dataRaw.map(normalizeDoc);
+
+      // 1) Age (5-year)
+      const ageCounts = countBy(data, d => groupAge5(d.age));
+      const ageLabels = Object.keys(ageCounts).sort((a,b) => {
+        if (a === 'Unknown') return 1;
+        if (b === 'Unknown') return -1;
+        if (a === '<18') return -1;
+        if (b === '<18') return 1;
+        const na = parseInt(a.split('-')[0],10);
+        const nb = parseInt(b.split('-')[0],10);
+        return (na||0) - (nb||0);
+      });
+      ageChart = makeBar('ageChart', ageLabels, ageLabels.map(l=>ageCounts[l]), 'Count', ageChart);
+
+      // 3) Experience groups
+      const expCounts = countBy(data, d => groupExperienceCustom(d.experience));
+      const expOrder = ['1-5','6-10','11-15','16-20','21-25','25+','Unknown'];
+      const expLabels = expOrder.filter(k => expCounts[k] !== undefined);
+      experienceChart = makeBar('experienceChart', expLabels, expLabels.map(l=>expCounts[l]), 'Count', experienceChart);
+
+      // 2) Ship Type
+      const shipCounts = countBy(data, d => d.shipType);
+      const shipLabels = Object.keys(shipCounts).sort((a,b)=>shipCounts[b]-shipCounts[a]);
+      shipTypeChart = makeBar('shipTypeChart', shipLabels, shipLabels.map(l=>shipCounts[l]), 'Count', shipTypeChart, true);
+
+      // 4) Rank
+      const rankCounts = countBy(data, d => d.rank);
+      const rankLabels = Object.keys(rankCounts).sort((a,b)=>rankCounts[b]-rankCounts[a]);
+      rankChart = makeBar('rankChart', rankLabels, rankLabels.map(l=>rankCounts[l]), 'Count', rankChart, true);
+
+      // 5) Company
+      const compCounts = countBy(data, d => d.company);
+      const compLabels = Object.keys(compCounts).sort((a,b)=>compCounts[b]-compCounts[a]).slice(0, 20);
+      companyChart = makeBar('companyChart', compLabels, compLabels.map(l=>compCounts[l]), 'Count', companyChart, true);
+
+      // 6) Nationality
+      const natCounts = countBy(data, d => d.nationality);
+      const natLabels = Object.keys(natCounts).sort((a,b)=>natCounts[b]-natCounts[a]).slice(0, 20);
+      nationalityChart = makeBar('nationalityChart', natLabels, natLabels.map(l=>natCounts[l]), 'Count', nationalityChart, true);
+
+      // 8) OSI Total histogram
+      const hist = osiTotalHistogram(data);
+      osiTotalChart = makeBar('osiTotalChart', hist.labels, hist.values, 'Count', osiTotalChart);
+
+      // 9) Psychological Safety Level (pie)
+      const psychCounts = countBy(data, d => d.psychSafetyLevel);
+      const psychLabels = Object.keys(psychCounts);
+      psychLevelChart = makePie('psychLevelChart', psychLabels, psychLabels.map(l=>psychCounts[l]), 'Psych Safety Level', psychLevelChart);
+
+      // 7) OSI subscales radar
+      const osi = osiSubscaleAverages(data);
+      osiRadarChart = makeRadar('osiRadarChart', osi.labels, osi.avgs.map(v=>Number(v.toFixed(2))), 'Avg item score (1-5)', osiRadarChart, 5);
+
+      // 10) Psych subscales radar
+      const ps = psychSubscaleAverages(data);
+      psychRadarChart = makeRadar('psychRadarChart', ps.labels, ps.avgs.map(v=>Number(v.toFixed(2))), 'Avg item score (1-5)', psychRadarChart, 5);
+    }
+
+    // Auth
+    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(console.error);
+
+    auth.onAuthStateChanged((user) => {
+      if (!user) {
+        statusEl.textContent = 'Not signed in. If your Firestore rules require auth for reads, open login.html and sign in.';
+        statusEl.className = 'p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 mb-6';
+      } else {
+        statusEl.textContent = 'Signed in as: ' + (user.email || '(unknown)') + ' — loading Firestore…';
+        statusEl.className = 'p-3 rounded-lg bg-blue-50 border border-blue-200 text-blue-900 mb-6';
+      }
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      try { await auth.signOut(); } catch(e) {}
+      window.location.href = 'login.html';
+    });
+
+    // Hook filter changes
+    [filterRank, filterShipType, filterNationality, filterCompany].forEach(el => el.addEventListener('change', () => { applyFilters(); }));
+
+    // Export filtered CSV
+    exportCsvBtn.addEventListener('click', () => {
+      const filtered = applyFilters();
+      exportFilteredCsv(filtered);
+    });
+
+    // Load data
+    statusEl.textContent = 'Loading documents from Firestore collection: seafarer-survey …';
+
+    db.collection('seafarer-survey')
+      .orderBy('createdAt', 'desc')
+      .onSnapshot((snap) => {
+        const raw = snap.docs.map(doc => doc.data());
+        allData = raw;
+
+        if (!raw.length) {
+          statusEl.textContent = 'No documents found. Submit at least one response from index.html.';
+          statusEl.className = 'p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 mb-6';
+          return;
+        }
+
+        statusEl.textContent = 'Loaded ' + raw.length + ' documents. Charts updated.';
+        statusEl.className = 'p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-900 mb-6';
+
+        populateFilters(raw);
+        applyFilters();
+
+      }, (err) => {
+        console.error(err);
+        statusEl.textContent = 'Firestore read failed: ' + (err.code || '') + ' ' + (err.message || err);
+        statusEl.className = 'p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-900 mb-6';
+      });
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Login — Seafarer Survey</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center p-6 font-sans">
+
+  <div class="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
+    <h1 class="text-2xl font-extrabold text-slate-900 mb-2">🔐 Admin Login</h1>
+    <p class="text-slate-600 mb-6">Sign in to access Admin and Dashboard.</p>
+
+    <div id="already" class="hidden p-3 mb-4 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-sm">
+      You are already signed in.
+      <div class="mt-3 flex gap-2">
+        <button id="continueBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg px-3 py-2">Continue</button>
+        <button id="signOutBtn" class="bg-slate-800 hover:bg-slate-900 text-white font-semibold rounded-lg px-3 py-2">Logout</button>
+      </div>
+    </div>
+
+    <form id="loginForm" class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Email</label>
+        <input id="email" type="email" required class="w-full border border-slate-300 rounded-lg px-3 py-2" placeholder="you@example.com" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Password</label>
+        <input id="password" type="password" required class="w-full border border-slate-300 rounded-lg px-3 py-2" placeholder="••••••••" />
+      </div>
+
+      <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg px-4 py-2">Login</button>
+      <p id="msg" class="text-sm text-rose-600"></p>
+    </form>
+
+    <p class="text-xs text-slate-500 mt-5">
+      Tip: If this page detects you are signed in, click Logout.
+    </p>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+  apiKey: "AIzaSyANzdsv-fvfeE_0JzLjt0friR8xbW0WxlE",
+  authDomain: "seafarer-survey-63734.firebaseapp.com",
+  projectId: "seafarer-survey-63734",
+  storageBucket: "seafarer-survey-63734.firebasestorage.app",
+  messagingSenderId: "332568709642",
+  appId: "1:332568709642:web:01a06b78a944bc7ace2df3"
+};
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(console.error);
+
+    const already = document.getElementById('already');
+    const continueBtn = document.getElementById('continueBtn');
+    const signOutBtn = document.getElementById('signOutBtn');
+
+    auth.onAuthStateChanged((user) => {
+      if (user) already.classList.remove('hidden');
+    });
+
+    continueBtn.addEventListener('click', () => { window.location.href = 'dashboard.html'; });
+    signOutBtn.addEventListener('click', async () => { await auth.signOut(); already.classList.add('hidden'); });
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      document.getElementById('msg').textContent = '';
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      try {
+        await auth.signInWithEmailAndPassword(email, password);
+        window.location.href = 'dashboard.html';
+      } catch (err) {
+        document.getElementById('msg').textContent = err.message || 'Login failed.';
+      }
+    });
+  </script>
+</body>
+</html>
