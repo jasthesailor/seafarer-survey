@@ -57,19 +57,50 @@ function renderIntroPage() {
   app.innerHTML = `
     <div class="relative w-full max-w-4xl mx-auto bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300 p-10 rounded-2xl shadow-2xl space-y-6">
       <h1 class="text-3xl font-extrabold text-center text-blue-900">Dear Seafarer Colleagues,</h1>
+
       <p class="text-lg text-blue-900 leading-relaxed">
         I hope you're well. As a fellow mariner and a psychology student, I’m conducting a research study on occupational stress, fatigue, and psychological safety at sea.
       </p>
+
       <p class="text-lg text-blue-900 leading-relaxed">
         Life on board demands <b> resilience and high performance </b>, but long hours, isolation, and constant pressure can take a toll. This study explores how psychological safety—the freedom to speak up, seek help, and make mistakes without fear—impacts our stress and fatigue levels.
       </p>
+
       <p class="text-lg text-blue-900 leading-relaxed">
         The survey is <b> anonymous </b> and takes just a few minutes. Your insights will help us better understand crew welfare and create an environment that will better support a healthier, more sustainable work environment.
       </p>
+
+      <!-- ⭐ Instructions block -->
+      <div class="space-y-2">
+        <p class="text-lg font-semibold text-blue-950">INSTRUCTIONS:</p>
+
+        <p class="text-lg text-blue-900 leading-relaxed font-semibold">
+          1. Please answer all questions with honesty and to the best of your knowledge.
+        </p>
+
+        <p class="text-lg text-blue-900 leading-relaxed font-semibold">
+          2. There are <b>NO right or wrong answers</b> and no trick questions.
+        </p>
+
+        <p class="text-lg text-blue-900 leading-relaxed font-semibold">
+          3. Avoid using <b>NEUTRAL</b> responses unless you truly have no other option.
+        </p>
+
+        <p class="text-lg text-blue-900 leading-relaxed font-semibold">
+          4. Do not overthink—please select the <b>first response</b> that comes to your mind.
+        </p>
+      </div>
+
       <p class="text-lg font-semibold text-blue-950">Fair winds and following seas,</p>
-      <p class="text-lg font-semibold text-blue-900"> <br/>Capt Jaspreet Singh Puri (JAS),<br> Master Mariner</br></p>
+
+      <p class="text-lg font-semibold text-blue-900">
+        <br/>Capt Jaspreet Singh Puri,<br> Master Mariner</br>
+      </p>
+
       <div class="text-center">
-        <button onclick="renderInfoPage()" class="bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-full text-lg font-medium shadow-md transition">Start Survey</button>
+        <button onclick="renderInfoPage()" class="bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-full text-lg font-medium shadow-md transition">
+          Start Survey
+        </button>
       </div>
     </div>
   `;
@@ -391,7 +422,7 @@ function renderFinalSection() {
           </div>
 
           <div class="mb-2">
-            <p class="text-lg font-semibold text-cyan-900 mb-2">Do you feel psychologically safe to address your concerns to the company/management?</p>
+            <p class="text-lg font-semibold text-cyan-900 mb-2">Do you feel psychologically safe (do not have any fear of being rediculed, retaliated against, made fun off or shouted at) to address your concerns to the company/management?</p>
             <div class="flex gap-6">
               <label class="flex items-center gap-2"><input type="radio" name="psychologicalSafety" value="Yes" required /> Yes</label>
               <label class="flex items-center gap-2"><input type="radio" name="psychologicalSafety" value="No" required /> No</label>
