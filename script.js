@@ -64,7 +64,7 @@ function renderIntroPage() {
         Life on board demands <b> resilience and high performance </b>, but long hours, isolation, and constant pressure can take a toll. This study explores how psychological safety—the freedom to speak up, seek help, and make mistakes without fear—impacts our stress and fatigue levels.
       </p>
       <p class="text-lg text-blue-900 leading-relaxed">
-        The survey is <b> anonymous </b> and takes just a few minutes. Your insights will help us better understand crew welfare and support a healthier, more sustainable work environment.
+        The survey is <b> anonymous </b> and takes just a few minutes. Your insights will help us better understand crew welfare and create an environment that will better support a healthier, more sustainable work environment.
       </p>
       <p class="text-lg font-semibold text-blue-950">Fair winds and following seas,</p>
       <p class="text-lg font-semibold text-blue-900"> <br/>Capt Jaspreet Singh Puri (JAS),<br> Master Mariner</br></p>
