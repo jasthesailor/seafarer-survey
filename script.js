@@ -8,7 +8,7 @@ function renderThankYouPage() {
       <p class="text-lg text-green-900 leading-relaxed mb-6">
         Your time and insights are truly appreciated. Your contribution will help promote a safer, healthier, and more supportive work environment for seafarers around the world.
       </p>
-      <p class="text-xl font-semibold text-green-900">Stay safe and sail well!<br/>Capt Jas</p>
+      <p class="text-xl font-semibold text-green-900">Stay safe and sail well!<br/>Capt Jaspreet Singh Puri</p>
     </div>
   `;
 }
@@ -87,7 +87,7 @@ function renderIntroPage() {
         </p>
 
         <p class="text-lg text-blue-900 leading-relaxed font-semibold">
-          4. Do not overthink—please select the <b>first response</b> that comes to your mind.
+          4.<b> DO NOT OVERTHINK</b>—please select the <b>first response</b> that comes to your mind.
         </p>
       </div>
 
@@ -206,7 +206,7 @@ function renderInfoPage() {
 }
 
 function renderOsiSurvey() {
-  const osiQuestions = ["I have to do a lot of work in this job", "The available information relating to my job-role and its outcomes are vague and insufficient.", "My different Officers often give contradictory instructions regarding my works.", "Sometimes it becomes complied problem for me to make adjustment between political/group pressures and formal rules and instructions.", "The responsibility for the efficiency and productivity of many employees is thrust upon me.", "Most of my suggestions are heeded and implemented here.", "My decisions and instructions concerning distribution of assignments among employees are properly followed.", "I have to work with persons whom I like.", "My assignments are of monotonous nature.", "Higher authorities do care for my self respect.", "I get less salary in comparison to the quantum of my labour/work.", "I do my work under tense circumstances.", "Owing to excessive work load I have to manage with insufficient number of employees and resources.", "The objectives of my work-role are quiet clear and adequately planned", "Officials do not interfere with my jurisdiction and working methods.", "I have to do some work unwillingly owing to certain group or political pressures.", "I am responsible for the future of a number of employees.", "My co-operation is frequently sort in solving the administrative or industrial problems at higher level.", "My suggestions regarding the training programs of employees are given due significance.", "Some of my colleagues and subordinates try to defame and malign me as unsuccessful.", "I get ample opportunity to utilize my abilities and experience independently.", "This job has enhance my social status.", "I am seldom rewarded for my hard labour and efficient performance.", "Some of my assignments are quite risky and complicated.", "I have to dispose of my work hurriedly owing to excessive work load.", "I am unable to perform my duties smoothly owing to uncertainty and ambiguity of the scope of my jurisdiction and authorities.", "I am not provided with clear instructions and sufficient facilities regarding the new assignments trusted to me.", "In order to maintain group conformity sometimes I have to do/produce more than usual.", "I bear the great responsibility for the progress and prosperity of this organization.", "My opinions are sought in framing important policies of the Organization/Department.", "Our interest and opinions are duly considered in making appointments for important post.", "My colleagues do cooperate with me voluntarily in solving administrative and industrial problems", "I get ample opportunity to develop my aptitude and proficiency properly.", "My higher authorities do not give due significance to my post and work.", "I often feel that this job has made my life cumbersome", "Being too busy with official work I am not able to devote sufficient time to my domestic and personal problems.", "It is not clear that what type of work and behaviour my higher authorities and colleagues expect from me.", "Employees attach due importance to the official instructions and formal working procedures.", "I am compelled to violate the formal and administrative procedures and policies owing to group/political pressures.", "My opinion is sought in changing or modifying the working system, instrument and conditions.", "There exists sufficient mutual co-operation and team-spirit among the employees of this Organization/Department.", "My suggestions and cooperation are not sought in solving even those problems for which I am quite competent.", "Working conditions are satisfactory here from the point of view of our welfare and convenience.", "I have to do such work as ought to be done by others.", "It becomes difficult to implement all of a sudden the new dealing procedures and policies in place of those already in practice.", "I am unable to carry out my assignment to my satisfaction on account of excessive load of work and lack of time."];
+  const osiQuestions = ["I have to do a lot of work in this job", "The available information relating to my job-role and its outcomes are vague and insufficient.", "My different Officers often give contradictory instructions regarding my works.", "Sometimes it becomes complied problem for me to make adjustment between political/group pressures and formal rules and instructions.", "The responsibility for the efficiency and productivity of many employees is thrust upon me.", "Most of my suggestions are heeded and implemented here.", "My decisions and instructions concerning distribution of assignments among employees are properly followed.", "I have to work with persons whom I like.", "My assignments are of monotonous nature.", "Higher authorities do care for my self respect.", "I get less salary in comparison to the quantum of my labour/work.", "I do my work under tense circumstances.", "Owing to excessive work load I have to manage with insufficient number of employees and resources.", "The objectives of my work-role are quiet clear and adequately planned", "Officials do not interfere with my jurisdiction and working methods.", "I have to do some work unwillingly owing to certain group or political pressures.", "I am responsible for the future of a number of employees.", "My co-operation is frequently sort in solving the administrative or industrial problems at higher level.", "My suggestions regarding the training programs of employees are given due significance.", "Some of my colleagues and subordinates try to defame and malign me as unsuccessful.", "I get ample opportunity to utilize my abilities and experience independently.", "This job has enhanced my social status.", "I am seldom rewarded for my hard labour and efficient performance.", "Some of my assignments are quite risky and complicated.", "I have to dispose of my work hurriedly owing to excessive work load.", "I am unable to perform my duties smoothly owing to uncertainty and ambiguity of the scope of my jurisdiction and authorities.", "I am not provided with clear instructions and sufficient facilities regarding the new assignments trusted to me.", "In order to maintain group conformity sometimes I have to do/produce more than usual.", "I bear the great responsibility for the progress and prosperity of this organization.", "My opinions are sought in framing important policies of the Organization/Department.", "Our interest and opinions are duly considered in making appointments for important post.", "My colleagues do cooperate with me voluntarily in solving administrative and industrial problems", "I get ample opportunity to develop my aptitude and proficiency properly.", "My higher authorities do not give due significance to my post and work.", "I often feel that this job has made my life cumbersome", "Being too busy with official work I am not able to devote sufficient time to my domestic and personal problems.", "It is not clear that what type of work and behaviour my higher authorities and colleagues expect from me.", "Employees attach due importance to the official instructions and formal working procedures.", "I am compelled to violate the formal and administrative procedures and policies owing to group/political pressures.", "My opinion is sought in changing or modifying the working system, instrument and conditions.", "There exists sufficient mutual co-operation and team-spirit among the employees of this Organization/Department.", "My suggestions and cooperation are not sought in solving even those problems for which I am quite competent.", "Working conditions are satisfactory here from the point of view of our welfare and convenience.", "I have to do such work as ought to be done by others.", "It becomes difficult to implement all of a sudden the new dealing procedures and policies in place of those already in practice.", "I am unable to carry out my assignment to my satisfaction on account of excessive load of work and lack of time."];
   const falseKeyed = [6, 7, 8, 10, 14, 15, 18, 19, 21, 22, 30, 31, 32, 33, 38, 40, 41, 43]; // 1-based item numbers
 
   const osiLabels = ["Strongly Disagree", "Disagree", "Uncertain", "Agree", "Strongly Agree"]; // 1..5
@@ -404,7 +404,7 @@ function renderFinalSection() {
 
             <div id="supportFollowup" class="mt-4 hidden">
               <label id="supportFollowupLabel" class="block font-medium text-cyan-900 mb-2"></label>
-              <textarea name="supportReason" class="w-full border border-cyan-300 px-4 py-3 rounded-lg bg-white" rows="3" placeholder="Type your answer..."></textarea>
+              <textarea name="supportReason" required class="w-full border border-cyan-300 px-4 py-3 rounded-lg bg-white" rows="3" placeholder="Type your answer..."></textarea>
             </div>
           </div>
 
@@ -417,7 +417,7 @@ function renderFinalSection() {
 
             <div id="communicationFollowup" class="mt-4 hidden">
               <label id="communicationFollowupLabel" class="block font-medium text-cyan-900 mb-2"></label>
-              <textarea name="communicationReason" class="w-full border border-cyan-300 px-4 py-3 rounded-lg bg-white" rows="3" placeholder="Type your answer..."></textarea>
+              <textarea name="communicationReason" required class="w-full border border-cyan-300 px-4 py-3 rounded-lg bg-white" rows="3" placeholder="Type your answer..."></textarea>
             </div>
           </div>
 
@@ -430,7 +430,7 @@ function renderFinalSection() {
 
             <div id="psychSafetyFollowup" class="mt-4 hidden">
               <label id="psychSafetyFollowupLabel" class="block font-medium text-cyan-900 mb-2"></label>
-              <textarea name="psychologicalSafetyReason" class="w-full border border-cyan-300 px-4 py-3 rounded-lg bg-white" rows="3" placeholder="Type your answer..."></textarea>
+              <textarea name="psychologicalSafetyReason" required class="w-full border border-cyan-300 px-4 py-3 rounded-lg bg-white" rows="3" placeholder="Type your answer..."></textarea>
             </div>
           </div>
 
@@ -452,6 +452,8 @@ function renderFinalSection() {
       const label = document.getElementById(labelId);
       followup.classList.remove("hidden");
       label.textContent = (r.value === "Yes") ? yesLabel : noLabel;
+    textarea.required = true;   // ✅ ADD
+    textarea.focus();           // ✅ ADD (UX improvement)
     }));
   }
 
