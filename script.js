@@ -1,5 +1,31 @@
 // script.js — Complete Survey Code
 
+
+// --- Submission de-duplication guard (minor fix: prevents double-click duplicates) ---
+let submissionInProgress = false;
+let _submissionId = null;
+const SUBMISSION_ID_KEY = "seafarerSurveySubmissionId";
+
+function getOrCreateSubmissionId() {
+  if (_submissionId) return _submissionId;
+  try {
+    const existing = sessionStorage.getItem(SUBMISSION_ID_KEY);
+    if (existing) {
+      _submissionId = existing;
+      return _submissionId;
+    }
+    const buf = new Uint8Array(16);
+    (window.crypto || crypto).getRandomValues(buf);
+    const id = Array.from(buf).map(b => b.toString(16).padStart(2, "0")).join("");
+    sessionStorage.setItem(SUBMISSION_ID_KEY, id);
+    _submissionId = id;
+    return _submissionId;
+  } catch (e) {
+    _submissionId = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    return _submissionId;
+  }
+}
+
 function renderThankYouPage() {
   const app = document.getElementById("app");
   app.innerHTML = `
@@ -483,6 +509,30 @@ function renderFinalSection() {
 
   form.addEventListener("submit", (e) => {
     e.preventDefault();
+
+    // Prevent duplicate submissions (double-click / slow network)
+    if (submissionInProgress) return;
+    submissionInProgress = true;
+
+    const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
+    if (submitBtn) {
+      // Block extra clicks without changing look & feel
+      submitBtn.setAttribute("aria-disabled", "true");
+      submitBtn.setAttribute("aria-busy", "true");
+      submitBtn.style.pointerEvents = "none";
+    }
+
+    // Safety timeout: allow retry if the request truly hangs (idempotent write prevents duplicates)
+    const hangTimer = setTimeout(() => {
+      if (submissionInProgress) {
+        submissionInProgress = false;
+        if (submitBtn) {
+          submitBtn.style.pointerEvents = "";
+          submitBtn.removeAttribute("aria-busy");
+          submitBtn.removeAttribute("aria-disabled");
+        }
+      }
+    }, 45000);
     const data = new FormData(form);
 
     surveyData.support = {
@@ -534,12 +584,23 @@ function renderFinalSection() {
       psychologicalSafetyReason: surveyData.psychologicalSafety.reason || ""
     };
 
-    db.collection("seafarer-survey").add({ ...cleanedData, createdAt: firebase.firestore.FieldValue.serverTimestamp(), source: "web" })
+    const submissionId = getOrCreateSubmissionId();
+
+    db.collection("seafarer-survey").doc(submissionId).set({ ...cleanedData, submissionId, createdAt: firebase.firestore.FieldValue.serverTimestamp(), source: "web" })
       .then(() => {
         console.log("✅ Survey data saved to Firestore!");
+        clearTimeout(hangTimer);
+        try { sessionStorage.removeItem(SUBMISSION_ID_KEY); } catch (e) {}
         renderThankYouPage();
       })
       .catch((error) => {
+        clearTimeout(hangTimer);
+        submissionInProgress = false;
+        if (submitBtn) {
+          submitBtn.style.pointerEvents = "";
+          submitBtn.removeAttribute("aria-busy");
+          submitBtn.removeAttribute("aria-disabled");
+        }
         console.error("❌ Error saving to Firestore:", error);
         alert("There was a problem submitting your survey. Please try again later.");
       });
