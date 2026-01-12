@@ -1,7 +1,7 @@
 // script.js — Complete Survey Code
 
 
-// --- Submission de-duplication guard (minor fix: prevents double-click duplicates) ---
+// --- Submit guard (prevents double-taps + enables safe retry on slow networks) ---
 let submissionInProgress = false;
 let _submissionId = null;
 const SUBMISSION_ID_KEY = "seafarerSurveySubmissionId";
@@ -478,8 +478,11 @@ function renderFinalSection() {
       const label = document.getElementById(labelId);
       followup.classList.remove("hidden");
       label.textContent = (r.value === "Yes") ? yesLabel : noLabel;
-    textarea.required = true;   // ✅ ADD
-    textarea.focus();           // ✅ ADD (UX improvement)
+      const textarea = followup ? followup.querySelector("textarea") : null;
+      if (textarea) {
+        textarea.required = true;
+        textarea.focus();
+      }
     }));
   }
 
@@ -510,29 +513,50 @@ function renderFinalSection() {
   form.addEventListener("submit", (e) => {
     e.preventDefault();
 
-    // Prevent duplicate submissions (double-click / slow network)
+    // Mobile users may tap multiple times on slow/blocked ship Wi‑Fi.
+    // Validate first (so we never "lock" the button on invalid forms).
+    if (typeof form.reportValidity === "function" && !form.reportValidity()) return;
+
+    // Prevent duplicate submissions (double-tap / lag)
     if (submissionInProgress) return;
     submissionInProgress = true;
 
     const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
+    const originalBtnText = submitBtn ? submitBtn.textContent : "";
+
     if (submitBtn) {
-      // Block extra clicks without changing look & feel
+      // Block extra taps without altering styling
       submitBtn.setAttribute("aria-disabled", "true");
       submitBtn.setAttribute("aria-busy", "true");
       submitBtn.style.pointerEvents = "none";
+      // Provide minimal feedback (text only; no visual redesign)
+      submitBtn.textContent = "Submitting…";
     }
 
-    // Safety timeout: allow retry if the request truly hangs (idempotent write prevents duplicates)
-    const hangTimer = setTimeout(() => {
-      if (submissionInProgress) {
-        submissionInProgress = false;
-        if (submitBtn) {
-          submitBtn.style.pointerEvents = "";
-          submitBtn.removeAttribute("aria-busy");
-          submitBtn.removeAttribute("aria-disabled");
-        }
+    const unlock = (message) => {
+      submissionInProgress = false;
+      if (submitBtn) {
+        submitBtn.style.pointerEvents = "";
+        submitBtn.removeAttribute("aria-busy");
+        submitBtn.removeAttribute("aria-disabled");
+        submitBtn.textContent = originalBtnText;
       }
+      if (message) alert(message);
+    };
+
+    // Safety timeout so it never looks like "nothing happened"
+    const hangTimer = setTimeout(() => {
+      unlock("Submission is taking longer than expected. Please try again.");
+      // NOTE: we keep the submissionId in sessionStorage so retries overwrite (no duplicates).
     }, 45000);
+
+    try {
+      // If Firebase is blocked/unavailable on this device/network, fail fast.
+      if (typeof db === "undefined" || typeof firebase === "undefined" || !firebase.firestore) {
+        clearTimeout(hangTimer);
+        return unlock("Unable to submit from this network/device (Firestore unavailable). Please try again later.");
+      }
+
     const data = new FormData(form);
 
     surveyData.support = {
@@ -595,14 +619,15 @@ function renderFinalSection() {
       })
       .catch((error) => {
         clearTimeout(hangTimer);
-        submissionInProgress = false;
-        if (submitBtn) {
-          submitBtn.style.pointerEvents = "";
-          submitBtn.removeAttribute("aria-busy");
-          submitBtn.removeAttribute("aria-disabled");
-        }
         console.error("❌ Error saving to Firestore:", error);
-        alert("There was a problem submitting your survey. Please try again later.");
+        unlock("There was a problem submitting your survey. Please try again later.");
+        return;
       });
+
+    } catch (err) {
+      clearTimeout(hangTimer);
+      console.error("❌ Submit handler crashed:", err);
+      unlock("Submission failed due to a technical issue. Please try again.");
+    }
   });
 }
